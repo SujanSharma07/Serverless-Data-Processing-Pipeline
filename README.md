@@ -54,6 +54,7 @@ This project implements a serverless, event-driven architecture using AWS servic
 - **Dead Letter Queue (DLQ)**: Captures unprocessable messages
 
 ## 📂 Project Structure
+```
 project-root/
 ├── lambda_functions/
 │   ├── csv_processor/
@@ -64,7 +65,7 @@ project-root/
 │   └── template.yaml
 ├── requirements.txt
 └── README.md
-
+```
 ## 🚀 Deployment Steps
 1. **Set Up AWS Resources**:
    - Create S3 buckets (input/output)
@@ -103,7 +104,7 @@ project-root/
 # 🚀 GitHub Actions Workflow for AWS SAM Deployment
 
 ## 📁 Directory Structure
-
+```
 project-root/
 ├── lambda_functions/
 │   ├── csv_processor/
@@ -115,7 +116,7 @@ project-root/
 └── .github/
     └── workflows/
         └── deploy.yml
-
+```
 ## 🔐 GitHub Secrets Configuration
 Add these secrets in GitHub (Settings > Secrets > Actions):
 - `AWS_ACCESS_KEY_ID`
