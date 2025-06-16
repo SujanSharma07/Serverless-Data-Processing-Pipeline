@@ -1,29 +1,21 @@
-📦 Serverless Data Processing Pipeline with AWS
-📘 Overview
+# 📦 Serverless Data Processing Pipeline with AWS
+
+## 📘 Overview
 This project implements a serverless, event-driven architecture using AWS services to process large CSV files. It leverages:
 
-Amazon S3: For storing input and output CSV files.
+- **Amazon S3**: For storing input and output CSV files
+- **AWS Lambda**: To process CSV files and handle business logic
+- **Amazon SNS**: To publish notifications about processing events
+- **Amazon SQS**: To queue messages for downstream processing
 
-AWS Lambda: To process CSV files and handle business logic.
+## 🎯 Objectives
+- Efficiently process large CSV files uploaded to S3
+- Implement a decoupled architecture using SNS and SQS
+- Ensure scalability and fault tolerance
+- Provide clear logging and monitoring through AWS CloudWatch
 
-Amazon SNS (Simple Notification Service): To publish notifications about processing events.
+## 🏗️ System Architecture
 
-Amazon SQS (Simple Queue Service): To queue messages for downstream processing.
-
-🎯 Objectives
-Efficiently process large CSV files uploaded to S3.
-
-Implement a decoupled architecture using SNS and SQS.
-
-Ensure scalability and fault tolerance.
-
-Provide clear logging and monitoring through AWS CloudWatch.
-aws.amazon.com
-
-🏗️ System Architecture
-plaintext
-Copy
-Edit
 +----------------+        +----------------+        +----------------+        +----------------+
 |                |        |                |        |                |        |                |
 |    Amazon S3   +------->+  AWS Lambda    +------->+     Amazon SNS +------->+     Amazon SQS  |
@@ -38,47 +30,30 @@ Edit
                                                                                  | (SQS Consumer) |
                                                                                  |                |
                                                                                  +----------------+
-🛠️ Implementation Details
-Amazon S3
-Input Bucket: Stores the uploaded CSV files.
 
-Output Bucket: Stores the processed results.
-exam-labs.com
-+8
-aws.amazon.com
-+8
-awsfundamentals.com
-+8
+## 🛠️ Implementation Details
+### 1. Amazon S3
+- **Input Bucket**: Stores uploaded CSV files
+- **Output Bucket**: Stores processed results
 
-2. AWS Lambda
-CSV Processor Function:
+### 2. AWS Lambda
+- **CSV Processor Function**:
+  - Triggered by S3 upload events
+  - Reads and processes CSV files
+  - Publishes messages to SNS topic upon completion
+- **SQS Consumer Function**:
+  - Triggered by messages in SQS queue
+  - Performs additional processing/notifications
 
-Triggered by S3 upload events.
+### 3. Amazon SNS
+- **Topic**: Receives messages from CSV Processor Lambda
+- **Subscription**: Forwards messages to SQS queue
 
-Reads and processes the CSV file.
+### 4. Amazon SQS
+- **Queue**: Receives messages from SNS topic
+- **Dead Letter Queue (DLQ)**: Captures unprocessable messages
 
-Publishes a message to an SNS topic upon completion.
-
-SQS Consumer Function:
-
-Triggered by messages in the SQS queue.
-
-Performs additional processing or notifications based on the message content.
-
-3. Amazon SNS
-Topic: Receives messages from the CSV Processor Lambda function.
-
-Subscription: Forwards messages to the SQS queue.
-
-4. Amazon SQS
-Queue: Receives messages from the SNS topic.
-
-Dead Letter Queue (DLQ): Captures messages that couldn't be processed successfully after multiple attempts.
-
-📂 Project Structure
-plaintext
-Copy
-Edit
+## 📂 Project Structure
 project-root/
 ├── lambda_functions/
 │   ├── csv_processor/
@@ -89,73 +64,124 @@ project-root/
 │   └── template.yaml
 ├── requirements.txt
 └── README.md
-🚀 Deployment Steps
-Set Up AWS Resources:
 
-Create S3 buckets for input and output.
+## 🚀 Deployment Steps
+1. **Set Up AWS Resources**:
+   - Create S3 buckets (input/output)
+   - Create SNS topic and SQS queue
+   - Subscribe SQS queue to SNS topic
+   
+2. **Configure IAM Roles**:
+   - Assign permissions to Lambda functions for S3/SNS/SQS access
+   
+3. **Deploy Lambda Functions**:
+   - Package and deploy using AWS SAM or AWS CLI
+   
+4. **Set Up Triggers**:
+   - Configure S3 to trigger `csv_processor` Lambda
+   - Configure SQS to trigger `sqs_consumer` Lambda
 
-Create an SNS topic and an SQS queue.
+## 🧪 Testing the Pipeline
+1. **Upload CSV File**: Place test file in input bucket
+2. **Monitor Processing**: Check CloudWatch logs for `csv_processor`
+3. **Verify SNS/SQS**: Confirm message flow to SNS → SQS
+4. **Check SQS Consumer**: Verify `sqs_consumer` processed message
 
-Subscribe the SQS queue to the SNS topic.
-christiangiacomi.com
+## 📈 Monitoring and Logging
+- **CloudWatch Logs**: Monitor Lambda execution logs
+- **CloudWatch Metrics**: Track invocation counts, durations, errors
+- **Alarms**: Set up for failed invocations or DLQ messages
 
-Configure IAM Roles:
+## 🧰 Tools and Technologies
+- **Languages**: Python 3.x
+- **AWS Services**:
+  - S3, Lambda, SNS, SQS, CloudWatch
+- **Infrastructure as Code**: AWS SAM/CloudFormation
 
-Assign necessary permissions to Lambda functions for accessing S3, SNS, and SQS.
+---
 
-Deploy Lambda Functions:
+# 🚀 GitHub Actions Workflow for AWS SAM Deployment
 
-Package and deploy the csv_processor and sqs_consumer functions using AWS SAM or the AWS CLI.
+## 📁 Directory Structure
 
-Set Up Triggers:
+project-root/
+├── lambda_functions/
+│   ├── csv_processor/
+│   │   └── handler.py
+│   └── sqs_consumer/
+│       └── handler.py
+├── template.yaml
+├── requirements.txt
+└── .github/
+    └── workflows/
+        └── deploy.yml
 
-Configure S3 to trigger the csv_processor Lambda on object creation.
+## 🔐 GitHub Secrets Configuration
+Add these secrets in GitHub (Settings > Secrets > Actions):
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_REGION` (e.g., `us-east-1`)
+- `S3_BUCKET` (for deployment artifacts)
 
-Configure the SQS queue to trigger the sqs_consumer Lambda.
+## 🧾 Sample `deploy.yml` Workflow
+```yaml
+name: Deploy AWS SAM Application
 
-🧪 Testing the Pipeline
-Upload a CSV File:
+on:
+  push:
+    branches: [main]
 
-Place a test CSV file into the input S3 bucket.
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: Install AWS SAM CLI
+        uses: aws-actions/setup-sam@v2
+        
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+        
+      - name: Build SAM Application
+        run: sam build
+        
+      - name: Deploy SAM Application
+        run: |
+          sam deploy --no-confirm-changeset --no-fail-on-empty-changeset \
+            --stack-name csv-processing-pipeline \
+            --s3-bucket ${{ secrets.S3_BUCKET }} \
+            --capabilities CAPABILITY_IAM \
+            --region ${{ secrets.AWS_REGION }}
 
-Monitor Processing:
 
-Check CloudWatch logs for the csv_processor Lambda to verify processing.
 
-Verify SNS and SQS:
+Workflow Actions:
+- Triggers on main branch pushes
 
-Ensure that a message was published to the SNS topic and received by the SQS queue.
+- Checks out repository code
 
-Check SQS Consumer:
+- Sets up Python environment
 
-Verify that the sqs_consumer Lambda processed the message from the SQS queue.
+- Installs AWS SAM CLI
 
-📈 Monitoring and Logging
-CloudWatch Logs:
+- Configures AWS credentials
 
-Monitor logs for both Lambda functions to troubleshoot issues.
+- Installs project dependencies
 
-CloudWatch Metrics:
+- Builds SAM application
 
-Track metrics such as invocation counts, durations, and errors.
-
-Alarms:
-
-Set up alarms for failed Lambda invocations or messages in the DLQ.
-
-🧰 Tools and Technologies
-Languages: Python 3.x
-
-AWS Services:
-
-Amazon S3
-
-AWS Lambda
-
-Amazon SNS
-
-Amazon SQS
-
-AWS CloudWatch
-
-Infrastructure as Code: AWS SAM or CloudFormation
+- Deploys to AWS
