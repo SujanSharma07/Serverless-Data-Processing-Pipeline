@@ -15,7 +15,7 @@ This project implements a serverless, event-driven architecture using AWS servic
 - Provide clear logging and monitoring through AWS CloudWatch
 
 ## 🏗️ System Architecture
-
+```
 +----------------+        +----------------+        +----------------+        +----------------+
 |                |        |                |        |                |        |                |
 |    Amazon S3   +------->+  AWS Lambda    +------->+     Amazon SNS +------->+     Amazon SQS  |
@@ -30,7 +30,7 @@ This project implements a serverless, event-driven architecture using AWS servic
                                                                                  | (SQS Consumer) |
                                                                                  |                |
                                                                                  +----------------+
-
+```
 ## 🛠️ Implementation Details
 ### 1. Amazon S3
 - **Input Bucket**: Stores uploaded CSV files
